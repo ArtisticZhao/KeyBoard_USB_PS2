@@ -2,6 +2,7 @@
 #include "CH9350L.h"
 
 #define _DEBUG
+
 unsigned long timecount = 0;
 PS2dev keyboard(19,18);  //clock, data
 Ch9350 keyboard_agent(&Serial2, &keyboard);
@@ -90,10 +91,10 @@ void loop()
   //This should be done at least once each 10ms
   unsigned char leds;
   if(keyboard.keyboard_handle(&leds)) {
-    //Serial.print('LEDS');
-    //Serial.print(leds, HEX);
+    Serial.printf("LED: %x\n", leds);
     digitalWrite(LED_BUILTIN, leds);
   }
+  delay(2);
 
   // //Print a number every second
   // if((millis() - timecount) > 1000) {

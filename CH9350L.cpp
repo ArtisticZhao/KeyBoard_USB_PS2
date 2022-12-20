@@ -151,9 +151,29 @@ void Ch9350::do_process(char* recv, int len){
   last_mod = recv[1];
   // ---- mod key process done
   // ---- key process
+  // release
+  for (int i=0; i<6; i++){
+    // if(last_key[i] == 0) break;
+    bool last_in_new = false;
+    for (int j=3; j<9; j++){
+      if (last_key[i] == recv[j]){
+        last_in_new = true;
+        break;
+      }
+      if (!last_in_new){
+        if (hid2ps2[last_key[i]].type == PS2_KEY_TYPE_NORMAL){
+          _ps2->keyboard_release(hid2ps2[last_key[i]].key);
+        }else{
+          _ps2->keyboard_release_special(hid2ps2[last_key[i]].key);
+        }
+        _debug(false, hid2ps2[last_key[i]].key, hid2ps2[last_key[i]].name);
+        break;
+      }
+    }
+  }
   // press
   for (int i=3; i<9; i++){
-    if (recv[i] == 0) break;
+    // if (recv[i] == 0) break;
     bool recv_in_old = false;
     for (int j=0; j<6; j++){
       if (recv[i] == last_key[j]){
@@ -172,27 +192,7 @@ void Ch9350::do_process(char* recv, int len){
       _debug(true, hid2ps2[recv[i]].key, hid2ps2[recv[i]].name);
     }
       
-  }
-  // release
-  for (int i=0; i<6; i++){
-    if(last_key[i] == 0) break;
-    bool last_in_new = false;
-    for (int j=3; j<9; j++){
-      if (last_key[i] == recv[j]){
-        last_in_new = true;
-        break;
-      }
-      if (!last_in_new){
-        if (hid2ps2[last_key[i]].type == PS2_KEY_TYPE_NORMAL){
-          _ps2->keyboard_release(hid2ps2[last_key[i]].key);
-        }else{
-          _ps2->keyboard_release_special(hid2ps2[last_key[i]].key);
-        }
-        _debug(false, hid2ps2[last_key[i]].key, hid2ps2[last_key[i]].name);
-        break;
-      }
-    }
-  }
+  } 
   // update last
   for (int i=3; i<9; i++){
     last_key[i-3] = recv[i];
@@ -206,6 +206,7 @@ void Ch9350::_ack_slave(){
     _ser->write(cmd_ack_salve[i]);
 }
 void Ch9350::_debug(bool press, uint8_t code, char* key){
+  // return;
   if (press){
     sprintf(prt_str, "press: %s, %x", key, code);
     Serial.println(prt_str);
@@ -234,51 +235,51 @@ void Ch9350::_init_hid2ps2() {
   hid2ps2[0x06] = {0x21, PS2_KEY_TYPE_NORMAL};
     strcpy(hid2ps2[0x06].name, "C");
   hid2ps2[0x07] = {0x23, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "D");
+    strcpy(hid2ps2[0x07].name, "D");
   hid2ps2[0x08] = {0x24, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "E");
+    strcpy(hid2ps2[0x08].name, "E");
   hid2ps2[0x09] = {0x2B, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "F");
+    strcpy(hid2ps2[0x09].name, "F");
   hid2ps2[0x0A] = {0x34, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "G");
+    strcpy(hid2ps2[0x0a].name, "G");
   hid2ps2[0x0B] = {0x33, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "H");
+    strcpy(hid2ps2[0x0b].name, "H");
   hid2ps2[0x0C] = {0x43, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "I");
+    strcpy(hid2ps2[0x0c].name, "I");
   hid2ps2[0x0D] = {0x3B, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "J");
+    strcpy(hid2ps2[0x0d].name, "J");
   hid2ps2[0x0E] = {0x42, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "K");
+    strcpy(hid2ps2[0x0e].name, "K");
   hid2ps2[0x0F] = {0x4B, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "L");
+    strcpy(hid2ps2[0x0f].name, "L");
   hid2ps2[0x10] = {0x3A, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "M");
+    strcpy(hid2ps2[0x10].name, "M");
   hid2ps2[0x11] = {0x31, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "N");
+    strcpy(hid2ps2[0x11].name, "N");
   hid2ps2[0x12] = {0x44, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "O");
+    strcpy(hid2ps2[0x12].name, "O");
   hid2ps2[0x13] = {0x4D, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "P");
+    strcpy(hid2ps2[0x13].name, "P");
   hid2ps2[0x14] = {0x15, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "Q");
+    strcpy(hid2ps2[0x14].name, "Q");
   hid2ps2[0x15] = {0x2D, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "R");
+    strcpy(hid2ps2[0x15].name, "R");
   hid2ps2[0x16] = {0x1B, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "S");
+    strcpy(hid2ps2[0x16].name, "S");
   hid2ps2[0x17] = {0x2C, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "T");
+    strcpy(hid2ps2[0x17].name, "T");
   hid2ps2[0x18] = {0x3C, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "U");
+    strcpy(hid2ps2[0x18].name, "U");
   hid2ps2[0x19] = {0x2A, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "V");
+    strcpy(hid2ps2[0x19].name, "V");
   hid2ps2[0x1A] = {0x1D, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "W");
+    strcpy(hid2ps2[0x1A].name, "W");
   hid2ps2[0x1B] = {0x22, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "X");
+    strcpy(hid2ps2[0x1B].name, "X");
   hid2ps2[0x1C] = {0x35, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "Y");
+    strcpy(hid2ps2[0x1C].name, "Y");
   hid2ps2[0x1D] = {0x1A, PS2_KEY_TYPE_NORMAL};
-    strcpy(hid2ps2[0x06].name, "Z");
+    strcpy(hid2ps2[0x1D].name, "Z");
 
   // 1-0
   hid2ps2[0x1E] = {0x16, PS2_KEY_TYPE_NORMAL};

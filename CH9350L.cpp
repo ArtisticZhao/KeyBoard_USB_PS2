@@ -151,48 +151,24 @@ void Ch9350::do_process(char* recv, int len){
   last_mod = recv[1];
   // ---- mod key process done
   // ---- key process
-  // release
-  for (int i=0; i<6; i++){
-    // if(last_key[i] == 0) break;
-    bool last_in_new = false;
-    for (int j=3; j<9; j++){
-      if (last_key[i] == recv[j]){
-        last_in_new = true;
-        break;
-      }
-      if (!last_in_new){
-        if (hid2ps2[last_key[i]].type == PS2_KEY_TYPE_NORMAL){
-          _ps2->keyboard_release(hid2ps2[last_key[i]].key);
+  for (int i=3; i<9; i++) {
+    if (last_key[i-3] == 0 && recv[i] != 0) {
+        if (hid2ps2[recv[i]].type == PS2_KEY_TYPE_NORMAL){
+          _ps2->keyboard_press(hid2ps2[recv[i]].key);
         }else{
-          _ps2->keyboard_release_special(hid2ps2[last_key[i]].key);
+          _ps2->keyboard_press_special(hid2ps2[recv[i]].key);
         }
-        _debug(false, hid2ps2[last_key[i]].key, hid2ps2[last_key[i]].name);
-        break;
-      }
+        _debug(true, hid2ps2[recv[i]].key, hid2ps2[recv[i]].name);
+    }else if (last_key[i-3] != 0 && recv[i] == 0) {
+        if (hid2ps2[last_key[i-3]].type == PS2_KEY_TYPE_NORMAL){
+          _ps2->keyboard_release(hid2ps2[last_key[i-3]].key);
+        }else{
+          _ps2->keyboard_release_special(hid2ps2[last_key[i-3]].key);
+        }
+        _debug(false, hid2ps2[last_key[i-3]].key, hid2ps2[last_key[i-3]].name);
+    
     }
   }
-  // press
-  for (int i=3; i<9; i++){
-    // if (recv[i] == 0) break;
-    bool recv_in_old = false;
-    for (int j=0; j<6; j++){
-      if (recv[i] == last_key[j]){
-        recv_in_old = true;
-        break;
-      }
-      if (last_key[j]==0) break;
-    }
-    if (!recv_in_old){
-      if (hid2ps2[recv[i]].type == PS2_KEY_TYPE_NORMAL){
-        _ps2->keyboard_press(hid2ps2[recv[i]].key);
-      }else{
-        _ps2->keyboard_press_special(hid2ps2[recv[i]].key);
-      }
-      
-      _debug(true, hid2ps2[recv[i]].key, hid2ps2[recv[i]].name);
-    }
-      
-  } 
   // update last
   for (int i=3; i<9; i++){
     last_key[i-3] = recv[i];

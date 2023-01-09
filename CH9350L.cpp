@@ -43,14 +43,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.LeftCtrl){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release(PS2dev::LEFT_CONTROL);
+      _ps2->keyboard_release_makesure(PS2dev::LEFT_CONTROL);
       _debug(false, (uint8_t)PS2dev::LEFT_CONTROL, "LCtrl");
     }
   }else{
     if (mod.LeftCtrl){
       // press
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_press(PS2dev::LEFT_CONTROL);
+      _ps2->keyboard_press_makesure(PS2dev::LEFT_CONTROL);
       _debug(true, (uint8_t)PS2dev::LEFT_CONTROL, "LCtrl");
     }
   }
@@ -59,14 +59,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.LeftShift){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release(PS2dev::LEFT_SHIFT);
+      _ps2->keyboard_release_makesure(PS2dev::LEFT_SHIFT);
       _debug(false, (uint8_t)PS2dev::LEFT_SHIFT, "LShift");
     }
   }else{
     if (mod.LeftShift){
       // press
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_press(PS2dev::LEFT_SHIFT);
+      _ps2->keyboard_press_makesure(PS2dev::LEFT_SHIFT);
       _debug(true, (uint8_t)PS2dev::LEFT_SHIFT, "LShift");
     }
   }
@@ -75,14 +75,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.LeftAlt){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release(PS2dev::LEFT_ALT);
+      _ps2->keyboard_release_makesure(PS2dev::LEFT_ALT);
       _debug(false, (uint8_t)PS2dev::LEFT_ALT, "LAlt");
     }
   }else{
     if (mod.LeftAlt){
       // press
-      _ps2->it(&ack_data);
-      _ps2->keyboard_press(PS2dev::LEFT_ALT);
+      _ps2->keyboard_handle(&ack_data);
+      _ps2->keyboard_press_makesure(PS2dev::LEFT_ALT);
       _debug(true, (uint8_t)PS2dev::LEFT_ALT, "LAlt");
     }
   }
@@ -91,14 +91,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.LeftSuper){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release_special(PS2dev::LEFT_WIN);
+      _ps2->keyboard_release_special_makesure(PS2dev::LEFT_WIN);
       _debug(false, (uint8_t)PS2dev::LEFT_WIN, "LSuper");
     }
   }else{
     if (mod.LeftSuper){
       // press
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_press_special(PS2dev::LEFT_WIN);
+      _ps2->keyboard_press_special_makesure(PS2dev::LEFT_WIN);
       _debug(true, (uint8_t)PS2dev::LEFT_WIN, "LSuper");
     }
   }
@@ -107,14 +107,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.RightCtrl){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release_special(PS2dev::RIGHT_CONTROL);
+      _ps2->keyboard_release_special_makesure(PS2dev::RIGHT_CONTROL);
       _debug(false, (uint8_t)PS2dev::RIGHT_CONTROL, "RCtrl");
     }
   }else{
     if (mod.RightCtrl){
       // press
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_press_special(PS2dev::RIGHT_CONTROL);
+      _ps2->keyboard_press_special_makesure(PS2dev::RIGHT_CONTROL);
       _debug(true, (uint8_t)PS2dev::RIGHT_CONTROL, "RCtrl");
     }
   }
@@ -123,14 +123,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.RightShift){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release(PS2dev::RIGHT_SHIFT);
+      _ps2->keyboard_release_makesure(PS2dev::RIGHT_SHIFT);
       _debug(false, (uint8_t)PS2dev::RIGHT_SHIFT, "RShift");
     }
   }else{
     if (mod.RightShift){
       // press
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_press(PS2dev::RIGHT_SHIFT);
+      _ps2->keyboard_press_makesure(PS2dev::RIGHT_SHIFT);
       _debug(true, (uint8_t)PS2dev::RIGHT_SHIFT, "RShift");
     }
   }
@@ -139,14 +139,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.RightAlt){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release_special(PS2dev::RIGHT_ALT);
+      _ps2->keyboard_release_special_makesure(PS2dev::RIGHT_ALT);
       _debug(false, (uint8_t)PS2dev::RIGHT_ALT, "RAlt");
     }
   }else{
     if (mod.RightAlt){
       // press
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_press_special(PS2dev::RIGHT_ALT);
+      _ps2->keyboard_press_special_makesure(PS2dev::RIGHT_ALT);
       _debug(true, (uint8_t)PS2dev::RIGHT_ALT, "RAlt");
     }
   }
@@ -155,14 +155,14 @@ void Ch9350::do_process(char* recv, int len){
     if (!mod.RightSuper){
       // release
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_release_special(PS2dev::RIGHT_WIN);
+      _ps2->keyboard_release_special_makesure(PS2dev::RIGHT_WIN);
       _debug(false, (uint8_t)PS2dev::RIGHT_WIN, "RSuper");
     }
   }else{
     if (mod.RightSuper){
       // press
       _ps2->keyboard_handle(&ack_data);
-      _ps2->keyboard_press_special(PS2dev::RIGHT_WIN);
+      _ps2->keyboard_press_special_makesure(PS2dev::RIGHT_WIN);
       _debug(true, (uint8_t)PS2dev::RIGHT_WIN, "RSuper");
     }
   }
@@ -173,19 +173,19 @@ void Ch9350::do_process(char* recv, int len){
     if (last_key[i-3] == 0 && recv[i] != 0) {
         if (hid2ps2[recv[i]].type == PS2_KEY_TYPE_NORMAL){
           _ps2->keyboard_handle(&ack_data);
-          _ps2->keyboard_press(hid2ps2[recv[i]].key);
+          _ps2->keyboard_press_makesure(hid2ps2[recv[i]].key);
         }else{
           _ps2->keyboard_handle(&ack_data);
-          _ps2->keyboard_press_special(hid2ps2[recv[i]].key);
+          _ps2->keyboard_press_special_makesure(hid2ps2[recv[i]].key);
         }
         _debug(true, hid2ps2[recv[i]].key, hid2ps2[recv[i]].name);
     }else if (last_key[i-3] != 0 && recv[i] == 0) {
         if (hid2ps2[last_key[i-3]].type == PS2_KEY_TYPE_NORMAL){
           _ps2->keyboard_handle(&ack_data);
-          _ps2->keyboard_release(hid2ps2[last_key[i-3]].key);
+          _ps2->keyboard_release_makesure(hid2ps2[last_key[i-3]].key);
         }else{
           _ps2->keyboard_handle(&ack_data);
-          _ps2->keyboard_release_special(hid2ps2[last_key[i-3]].key);
+          _ps2->keyboard_release_special_makesure(hid2ps2[last_key[i-3]].key);
         }
         _debug(false, hid2ps2[last_key[i-3]].key, hid2ps2[last_key[i-3]].name);
     

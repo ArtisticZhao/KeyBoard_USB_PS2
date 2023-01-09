@@ -2,7 +2,7 @@
 #define CH9350L_H
 
 #include "HardwareSerial.h"
-#include <ps2dev.h> 
+#include "ps2dev.h"
 
 struct Ps2Key {
   uint8_t key;

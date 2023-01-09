@@ -1,7 +1,7 @@
 #include <ps2dev.h>    //Emulate a PS/2 device
 #include "CH9350L.h"
 
-#define _DEBUG
+// #define _DEBUG
 
 unsigned long timecount = 0;
 PS2dev keyboard(19,18);  //clock, data
@@ -89,12 +89,12 @@ void loop()
 {
   //Handle PS2 communication and react to keyboard led change
   //This should be done at least once each 10ms
-  unsigned char leds;
-  if(keyboard.keyboard_handle(&leds)) {
-    Serial.printf("LED: %x\n", leds);
-    digitalWrite(LED_BUILTIN, leds);
-  }
-  delay(2);
+  // unsigned char leds;
+  // if(keyboard.keyboard_handle(&leds)) {
+  //   Serial.printf("LED: %x\n", leds);
+  //   digitalWrite(LED_BUILTIN, leds);
+  // }
+  // delay(2);
 
   // //Print a number every second
   // if((millis() - timecount) > 1000) {

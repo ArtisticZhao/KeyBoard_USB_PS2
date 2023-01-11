@@ -94,5 +94,5 @@ void loop()
     Serial.printf("LED: %x\n", leds);
     digitalWrite(LED_BUILTIN, leds);
   }
-  delay(200);  // 200 ms
+  delay(2);  // 2 ms
 }

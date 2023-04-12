@@ -13,6 +13,7 @@
 #include "esp_log.h"
 
 #include "uart_process.h"
+#include "ps2.h"
 
 static const char *TAG = "uart_events";
 
@@ -131,6 +132,8 @@ void app_main(void)
 
     // init CH9350
     ack_ch9350();
+    // 初始化查找表
+    init_table();
     //Create a task to handler UART event from ISR
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
 }

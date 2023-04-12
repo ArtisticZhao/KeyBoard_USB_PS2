@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "esp_log.h"
 
+#include "ps2.h"
+
 static char rxdata[PRINT_BUFSIZE];
 
 char* print_bytes(const char* in, size_t size) {
@@ -65,6 +67,9 @@ void ch9350_parser(const char* in, size_t size) {
                     // recv whole keyboard cmd;
                     char* tmp = print_bytes((const char*)cmd, current_len);
                     ESP_LOGI("CH9350", "len: %d >> %s", current_len, tmp);
+
+                    // call parser_hid
+                    parser_hid((const uint8_t*)cmd);
                 }
                 break;
             default:

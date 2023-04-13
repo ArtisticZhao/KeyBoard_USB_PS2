@@ -5,10 +5,26 @@
 static Ps2Key hid2ps2[0xE8];  // 定义hid编码到ps2编码的查找表
 
 
-static uint8_t last_key[6] = { 0 };  // USB 键盘最多6键按下
 void parser_hid(const uint8_t* in) {
-
-    uint8_t* normal_key = in+3;
+    static uint8_t last_key[6] = { 0 };  // USB 键盘最多6键按下
+    static uint8_t mod_last = 0;         // mod key 上一次的值
+    // ------ 处理mod key
+    uint8_t mod_key = in[1];
+    for (size_t i = 0; i < 8 ; i++) {
+        uint8_t key = mod_key & (0x01 << i);
+        uint8_t last_mod_key = mod_last & (0x01 << i);
+        if (key != 0 && last_mod_key == 0) {
+            // mod key press
+            _debug(&hid2ps2[0xE0+i], 1);
+        }
+        else if (key == 0 && last_mod_key != 0) {
+            // mod key press
+            _debug(&hid2ps2[0xE0+i], 0);
+        }
+    }
+    mod_last = mod_key;
+    // ------ 处理正常按键
+    const uint8_t* normal_key = in+3;
     for (uint8_t i = 0; i < 6; i++) {
         if (normal_key[i] != 0 && last_key[i] == 0) {
             // key press
@@ -147,9 +163,12 @@ void init_table() {
 
     set_ps2key(0xE0, 0x14, PS2_KEY_TYPE_NORMAL, "LCtrl");
     set_ps2key(0xE1, 0x12, PS2_KEY_TYPE_NORMAL, "LShift");
-    set_ps2key(0xE2, 0x11, PS2_KEY_TYPE_NORMAL, "RShift");
-
+    set_ps2key(0xE2, 0x11, PS2_KEY_TYPE_NORMAL, "LAlt");
+    set_ps2key(0xE3, 0x1F, PS2_KEY_TYPE_E0, "LGUI");
+    set_ps2key(0xE4, 0x14, PS2_KEY_TYPE_E0, "RCtrl");
     set_ps2key(0xE5, 0x59, PS2_KEY_TYPE_E0, "RShift");
+    set_ps2key(0xE6, 0x11, PS2_KEY_TYPE_E0, "RAlt");
+    set_ps2key(0xE7, 0x27, PS2_KEY_TYPE_E0, "RGUI");
 
     set_ps2key(0x46, 0x7C, PS2_KEY_TYPE_E0, "PrtSc");
 
@@ -165,8 +184,4 @@ void init_table() {
     set_ps2key(0x52, 0x75, PS2_KEY_TYPE_E0, "Up");
 
     set_ps2key(0x65, 0x2F, PS2_KEY_TYPE_E0, "App");
-    set_ps2key(0xE3, 0x1F, PS2_KEY_TYPE_E0, "LGUI");
-    set_ps2key(0xE4, 0x14, PS2_KEY_TYPE_E0, "RCtrl");
-    set_ps2key(0xE6, 0x11, PS2_KEY_TYPE_E0, "RAlt");
-    set_ps2key(0xE7, 0x27, PS2_KEY_TYPE_E0, "RGUI");
 }

@@ -14,6 +14,7 @@
 
 #include "uart_process.h"
 #include "ps2.h"
+#include "fifo.h"
 
 static const char *TAG = "uart_events";
 
@@ -39,6 +40,9 @@ static const char *TAG = "uart_events";
 #define BUF_SIZE (1024)
 #define RD_BUF_SIZE (BUF_SIZE)
 static QueueHandle_t uart0_queue;
+
+// 全局变量
+QueueHandle_t key_event_fifo;
 
 static void ack_ch9350(){
   char cmd_ack_salve[] = {0x57, 0xab, 0x12, 0x00, 0x00, 0x00, 0x00, 0xff, 0x80, 0x00, 0x20};
@@ -106,10 +110,26 @@ static void uart_event_task(void *pvParameters)
     vTaskDelete(NULL);
 }
 
+static void ps2_event_task(void *pvParameters) {
+    QueueHandle_t fifo = (QueueHandle_t) pvParameters;
+    keyEvent key_event;
+    for (;;) {
+        if (xQueueReceive(fifo, &key_event, 10) != pdPASS) {
+            // no data
+        }
+        else {
+            ESP_LOGI("PS2", "%02x %02x %d", key_event.ps2_keycode, key_event.ps2_keytype, key_event.status);
+        }
+    }
+
+}
+
+
 void app_main(void)
 {
     esp_log_level_set(TAG, ESP_LOG_INFO);
 
+    // ------------ 设置 UART
     /* Configure parameters of an UART driver,
      * communication pins and install the driver */
     uart_config_t uart_config = {
@@ -123,10 +143,6 @@ void app_main(void)
     //Install UART driver, and get the queue.
     uart_driver_install(EX_UART_NUM, BUF_SIZE * 2, BUF_SIZE * 2, 20, &uart0_queue, 0);
     uart_param_config(EX_UART_NUM, &uart_config);
-    ESP_LOGI(TAG, "test");
-
-    //Set UART log level
-    esp_log_level_set(TAG, ESP_LOG_INFO);
     //Set UART pins (using UART0 default pins ie no changes.)
     uart_set_pin(EX_UART_NUM, EX_UART_TXD, EX_UART_RXD, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
@@ -134,6 +150,9 @@ void app_main(void)
     ack_ch9350();
     // 初始化查找表
     init_table();
+    // 初始化按键序列 FIFO
+    key_event_fifo = xQueueCreate( FIFO_SIZE, FIFO_ITEM_SIZE );
     //Create a task to handler UART event from ISR
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+    xTaskCreate(ps2_event_task, "ps2_event_task", 2048, key_event_fifo, 12, NULL);
 }

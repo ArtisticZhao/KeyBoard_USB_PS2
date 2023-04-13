@@ -65,9 +65,6 @@ void ch9350_parser(const char* in, size_t size) {
                 if (recv_cnt == current_len){
                     ser_fsm_state = IDLE;
                     // recv whole keyboard cmd;
-                    char* tmp = print_bytes((const char*)cmd, current_len);
-                    ESP_LOGI("CH9350", "len: %d >> %s", current_len, tmp);
-
                     // call parser_hid
                     parser_hid((const uint8_t*)cmd);
                 }

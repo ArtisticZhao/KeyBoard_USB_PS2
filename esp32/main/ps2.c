@@ -2,6 +2,8 @@
 #include <string.h>
 #include "esp_log.h"
 
+#include "fifo.h"
+
 static Ps2Key hid2ps2[0xE8];  // 定义hid编码到ps2编码的查找表
 
 
@@ -15,11 +17,11 @@ void parser_hid(const uint8_t* in) {
         uint8_t last_mod_key = mod_last & (0x01 << i);
         if (key != 0 && last_mod_key == 0) {
             // mod key press
-            _debug(&hid2ps2[0xE0+i], 1);
+            put_key(&hid2ps2[0xE0+i], KEY_PRESS);
         }
         else if (key == 0 && last_mod_key != 0) {
             // mod key press
-            _debug(&hid2ps2[0xE0+i], 0);
+            put_key(&hid2ps2[0xE0+i], KEY_RELEASE);
         }
     }
     mod_last = mod_key;
@@ -28,11 +30,11 @@ void parser_hid(const uint8_t* in) {
     for (uint8_t i = 0; i < 6; i++) {
         if (normal_key[i] != 0 && last_key[i] == 0) {
             // key press
-            _debug(&hid2ps2[normal_key[i]], 1);
+            put_key(&hid2ps2[normal_key[i]], KEY_PRESS);
         }
         else if (normal_key[i] == 0 && last_key[i] != 0) {
             // key release
-            _debug(&hid2ps2[last_key[i]], 0);
+            put_key(&hid2ps2[last_key[i]], KEY_RELEASE);
         }
     }
     // all done update last_key

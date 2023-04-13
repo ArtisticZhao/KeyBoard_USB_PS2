@@ -144,4 +144,29 @@ void init_table() {
     set_ps2key(97, 0x7d, PS2_KEY_TYPE_NORMAL, "Num9");
     set_ps2key(98, 0x70, PS2_KEY_TYPE_NORMAL, "Num0");
     set_ps2key(99, 0x63, PS2_KEY_TYPE_NORMAL, "Num.");
+
+    set_ps2key(0xE0, 0x14, PS2_KEY_TYPE_NORMAL, "LCtrl");
+    set_ps2key(0xE1, 0x12, PS2_KEY_TYPE_NORMAL, "LShift");
+    set_ps2key(0xE2, 0x11, PS2_KEY_TYPE_NORMAL, "RShift");
+
+    set_ps2key(0xE5, 0x59, PS2_KEY_TYPE_E0, "RShift");
+
+    set_ps2key(0x46, 0x7C, PS2_KEY_TYPE_E0, "PrtSc");
+
+    set_ps2key(0x49, 0x70, PS2_KEY_TYPE_E0, "Ins");
+    set_ps2key(0x4A, 0x6C, PS2_KEY_TYPE_E0, "Home");
+    set_ps2key(0x4B, 0x7D, PS2_KEY_TYPE_E0, "PgUp");
+    set_ps2key(0x4C, 0x71, PS2_KEY_TYPE_E0, "Del");
+    set_ps2key(0x4D, 0x69, PS2_KEY_TYPE_E0, "End");
+    set_ps2key(0x4E, 0x7A, PS2_KEY_TYPE_E0, "PgDown");
+    set_ps2key(0x4F, 0x74, PS2_KEY_TYPE_E0, "Right");
+    set_ps2key(0x50, 0x6B, PS2_KEY_TYPE_E0, "Left");
+    set_ps2key(0x51, 0x72, PS2_KEY_TYPE_E0, "Donw");
+    set_ps2key(0x52, 0x75, PS2_KEY_TYPE_E0, "Up");
+
+    set_ps2key(0x65, 0x2F, PS2_KEY_TYPE_E0, "App");
+    set_ps2key(0xE3, 0x1F, PS2_KEY_TYPE_E0, "LGUI");
+    set_ps2key(0xE4, 0x14, PS2_KEY_TYPE_E0, "RCtrl");
+    set_ps2key(0xE6, 0x11, PS2_KEY_TYPE_E0, "RAlt");
+    set_ps2key(0xE7, 0x27, PS2_KEY_TYPE_E0, "RGUI");
 }

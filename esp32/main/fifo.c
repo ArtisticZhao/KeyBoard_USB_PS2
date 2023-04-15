@@ -14,8 +14,3 @@ void put_key(const Ps2Key* key, uint8_t status) {
         ESP_LOGI("FIFO", "FIFO put failed!");
     }
 }
-
-
-void get_key(const Ps2Key* key, uint8_t status) {
-
-}

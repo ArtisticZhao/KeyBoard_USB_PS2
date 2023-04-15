@@ -15,6 +15,7 @@
 #include "uart_process.h"
 #include "ps2.h"
 #include "fifo.h"
+#include "driver.h"
 
 static const char *TAG = "uart_events";
 
@@ -116,9 +117,11 @@ static void ps2_event_task(void *pvParameters) {
     for (;;) {
         if (xQueueReceive(fifo, &key_event, 10) != pdPASS) {
             // no data
+            is_idle();
         }
         else {
-            ESP_LOGI("PS2", "%02x %02x %d", key_event.ps2_keycode, key_event.ps2_keytype, key_event.status);
+            is_idle();
+            sim_key(&key_event);
         }
     }
 
@@ -152,6 +155,8 @@ void app_main(void)
     init_table();
     // 初始化按键序列 FIFO
     key_event_fifo = xQueueCreate( FIFO_SIZE, FIFO_ITEM_SIZE );
+    //
+    init_io();
     //Create a task to handler UART event from ISR
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
     xTaskCreate(ps2_event_task, "ps2_event_task", 2048, key_event_fifo, 12, NULL);

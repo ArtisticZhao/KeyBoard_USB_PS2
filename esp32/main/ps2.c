@@ -161,7 +161,7 @@ void init_table() {
     set_ps2key(96, 0x75, PS2_KEY_TYPE_NORMAL, "Num8");
     set_ps2key(97, 0x7d, PS2_KEY_TYPE_NORMAL, "Num9");
     set_ps2key(98, 0x70, PS2_KEY_TYPE_NORMAL, "Num0");
-    set_ps2key(99, 0x63, PS2_KEY_TYPE_NORMAL, "Num.");
+    set_ps2key(99, 0x71, PS2_KEY_TYPE_NORMAL, "Num.");
 
     set_ps2key(0xE0, 0x14, PS2_KEY_TYPE_NORMAL, "LCtrl");
     set_ps2key(0xE1, 0x12, PS2_KEY_TYPE_NORMAL, "LShift");

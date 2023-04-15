@@ -19,6 +19,5 @@ typedef struct keyEvent {
 
 //extern QueueHandle_t key_event_fifo;
 void put_key(const Ps2Key* key, uint8_t status);
-void get_key(const Ps2Key* key, uint8_t status);
 
 #endif

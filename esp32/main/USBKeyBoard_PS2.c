@@ -157,6 +157,8 @@ void app_main(void)
     key_event_fifo = xQueueCreate( FIFO_SIZE, FIFO_ITEM_SIZE );
     //
     init_io();
+
+    init_keyboard();
     //Create a task to handler UART event from ISR
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
     xTaskCreate(ps2_event_task, "ps2_event_task", 2048, key_event_fifo, 12, NULL);

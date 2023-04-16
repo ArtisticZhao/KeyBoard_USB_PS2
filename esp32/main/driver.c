@@ -28,15 +28,37 @@
 // const TickType_t BYTEWAIT = pdMS_TO_TICKS( M_BYTEWAIT );
 // const TickType_t TIMEOUT = pdMS_TO_TICKS( M_TIMEOUT );
 
-#define gohi(pin) gpio_set_level(pin, 1)
-#define golo(pin) gpio_set_level(pin, 0)
+/*#define gohi(pin) gpio_set_level(pin, 1)*/
+/*#define golo(pin) gpio_set_level(pin, 0)*/
 #define delayMicroseconds(time) usleep(time)
+#define digitalRead(pin) gpio_get_level(pin)
+#define LOW 0
+#define HIGH 1
 
-void ps2_write(uint8_t data) {
+static void gohi(uint32_t pin) {
+    gpio_set_direction(pin, GPIO_MODE_INPUT);
+    gpio_pullup_en(pin);
+}
+
+static void golo(uint32_t pin) {
+    gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+    gpio_set_level(pin, 0);
+
+}
+
+int8_t ps2_write(uint8_t data) {
     delayMicroseconds(BYTEWAIT);
 
     unsigned char i;
     unsigned char parity = 1;
+
+    if (digitalRead(_ps2clk) == LOW) {
+        return -1;
+    }
+
+    if (digitalRead(_ps2data) == LOW) {
+        return -2;
+    }
 
     golo(_ps2data);
     delayMicroseconds(CLKHALF);
@@ -85,14 +107,10 @@ void ps2_write(uint8_t data) {
     delayMicroseconds(CLKHALF);
 
     delayMicroseconds(BYTEWAIT);
+
+    return 0;
 }
 
-void key_press(uint8_t keycode, uint8_t mode) {
-    if (mode == PS2_KEY_TYPE_NORMAL) {
-
-    }
-
-}
 
 void sim_key(keyEvent* key) {
     if (key->ps2_keytype == PS2_KEY_TYPE_NORMAL) {
@@ -122,15 +140,85 @@ void sim_key(keyEvent* key) {
 uint8_t ps2_available() {
     return ( (gpio_get_level(_ps2data) == 0) || (gpio_get_level(_ps2clk) == 0) );
 }
-void is_idle() {
-    // 1. set to input
-    gpio_set_direction(PS2_CLK, GPIO_MODE_INPUT);
-    gpio_set_direction(PS2_DATA, GPIO_MODE_INPUT);
-    if (ps2_available()) {
-        ESP_LOGI("drive", "ps2 available!");
+
+uint8_t ps2_read(uint8_t* value){
+    uint32_t data = 0x00;
+    uint32_t bit = 0x01;
+    uint8_t calculated_parity = 1;
+    uint8_t recv_parity = 0;
+    uint8_t timeout_cnt = 0;
+    while ((digitalRead(_ps2data) != LOW) || (digitalRead(_ps2clk) != HIGH)) {
+        usleep(1);
+        timeout_cnt++;
+        if (timeout_cnt > TIMEOUT) {
+            return 33;
+        }
     }
-    gpio_set_direction(PS2_CLK, GPIO_MODE_OUTPUT);
-    gpio_set_direction(PS2_DATA, GPIO_MODE_OUTPUT);
+
+    delayMicroseconds(CLKHALF);
+    golo(_ps2clk);
+    delayMicroseconds(CLKFULL);
+    gohi(_ps2clk);
+    delayMicroseconds(CLKHALF);
+
+    while (bit < 0x0100) {
+        if (digitalRead(_ps2data) == HIGH)
+        {
+            data = data | bit;
+            calculated_parity = calculated_parity ^ 1;
+        } else {
+            calculated_parity = calculated_parity ^ 0;
+        }
+
+        bit = bit << 1;
+
+        delayMicroseconds(CLKHALF);
+        golo(_ps2clk);
+        delayMicroseconds(CLKFULL);
+        gohi(_ps2clk);
+        delayMicroseconds(CLKHALF);
+
+    }
+    // we do the delay at the end of the loop, so at this point we have
+    // already done the delay for the parity bit
+
+    // parity bit
+    if (digitalRead(_ps2data) == HIGH)
+    {
+        recv_parity = 1;
+    }
+
+    // stop bit
+    delayMicroseconds(CLKHALF);
+    golo(_ps2clk);
+    delayMicroseconds(CLKFULL);
+    gohi(_ps2clk);
+    delayMicroseconds(CLKHALF);
+
+
+    delayMicroseconds(CLKHALF);
+    golo(_ps2data);
+    golo(_ps2clk);
+    delayMicroseconds(CLKFULL);
+    gohi(_ps2clk);
+    delayMicroseconds(CLKHALF);
+    gohi(_ps2data);
+
+
+    *value = data & 0x00FF;
+
+#ifdef _PS2DBG
+    ESP_LOGI("ps2_read", "ps2 read: %x", *value);
+    if (recv_parity != calculated_parity) {
+        ESP_LOGI("ps2_read", "recv parity: %x", recv_parity);
+        ESP_LOGI("ps2_read", "calac parity: %x", calculated_parity);
+    }
+#endif
+    if (recv_parity == calculated_parity) {
+        return 0;
+    } else {
+        return 99;
+    }
 }
 
 
@@ -160,3 +248,74 @@ void init_io() {
     delayMicroseconds(TIMEOUT);
     ESP_LOGI("driver", "test delay ok");
 }
+
+
+void init_keyboard() {
+    while (ps2_write(0xAA) != 0);
+}
+
+static void ps2_ack(){
+    while (ps2_write(0xFA)!=0);
+}
+
+static uint8_t ps2_keyboard_reply(uint8_t cmd) {
+    uint8_t val=0;
+    switch (cmd) {
+    case 0xFF: //reset
+        ps2_ack();
+        //the while loop lets us wait for the host to be ready
+        while(ps2_write(0xAA)!=0);
+        break;
+    case 0xFE: //resend
+        ps2_ack();
+        break;
+    case 0xF6: //set defaults
+        //enter stream mode
+        ps2_ack();
+        break;
+    case 0xF5: //disable data reporting
+        //FM
+        ps2_ack();
+        break;
+    case 0xF4: //enable data reporting
+        //FM
+        ps2_ack();
+        break;
+    case 0xF3: //set typematic rate
+        ps2_ack();
+        if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
+        break;
+    case 0xF2: //get device id
+        ps2_ack();
+        ps2_write(0xAB);
+        ps2_write(0x83);
+        break;
+    case 0xF0: //set scan code set
+        ps2_ack();
+        if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
+        break;
+    case 0xEE: //echo
+        //ps2_ack();
+        ps2_write(0xEE);
+        break;
+    case 0xED: //set/reset LEDs
+        ps2_ack();
+        if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
+        break;
+    }
+#ifdef _PS2DBG
+    if (cmd != 0) {
+        ESP_LOGI("ps2_reply", "cmd=%x, val=%x", cmd, val);
+    }
+#endif
+    return val;
+}
+
+void is_idle() {
+    uint8_t c;
+    if (ps2_available()) {
+        ps2_read(&c);
+        ps2_keyboard_reply(c);
+    }
+}
+

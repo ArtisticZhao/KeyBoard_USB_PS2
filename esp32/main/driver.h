@@ -4,6 +4,9 @@
 #include<stdint.h>
 #include "fifo.h"
 
+
+#define _PS2DBG
+
 #define PS2_CLK 19
 #define PS2_DATA 18
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<PS2_CLK) | (1ULL<<PS2_DATA))
@@ -18,6 +21,7 @@
 #define PS2_KEY_TYPE_E1 0x04
 
 void init_io();
+void init_keyboard();
 
 void sim_key(keyEvent* key);
 

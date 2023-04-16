@@ -6,6 +6,7 @@
 */
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -157,7 +158,7 @@ void app_main(void)
     key_event_fifo = xQueueCreate( FIFO_SIZE, FIFO_ITEM_SIZE );
     //
     init_io();
-
+    sleep(1);
     init_keyboard();
     //Create a task to handler UART event from ISR
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);

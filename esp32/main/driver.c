@@ -111,8 +111,9 @@ int8_t ps2_write(uint8_t data) {
     return 0;
 }
 
-
+static keyEvent last_key;
 void sim_key(keyEvent* key) {
+    last_key = *key;
     if (key->ps2_keytype == PS2_KEY_TYPE_NORMAL) {
         if (key->status) {
             // key_press
@@ -251,11 +252,21 @@ void init_io() {
 
 
 void init_keyboard() {
-    while (ps2_write(0xAA) != 0);
+    ESP_LOGI("ps2_init", "init kbk");
+    while (ps2_write(0xAA) != 0) {
+#ifdef _PS2DBG
+    ESP_LOGI("ps2_init", "init kbk fail retry");
+#endif
+    }
 }
 
 static void ps2_ack(){
-    while (ps2_write(0xFA)!=0);
+    while (ps2_write(0xFA)!=0) {
+#ifdef _PS2DBG
+    ESP_LOGI("ps2_ack", "ack fail retry");
+#endif
+
+    }
 }
 
 static uint8_t ps2_keyboard_reply(uint8_t cmd) {
@@ -267,7 +278,7 @@ static uint8_t ps2_keyboard_reply(uint8_t cmd) {
         while(ps2_write(0xAA)!=0);
         break;
     case 0xFE: //resend
-        ps2_ack();
+        sim_key(&last_key);
         break;
     case 0xF6: //set defaults
         //enter stream mode

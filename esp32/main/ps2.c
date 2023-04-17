@@ -18,10 +18,12 @@ void parser_hid(const uint8_t* in) {
         if (key != 0 && last_mod_key == 0) {
             // mod key press
             put_key(&hid2ps2[0xE0+i], KEY_PRESS);
+            _debug(&hid2ps2[0xE0+i], KEY_PRESS);
         }
         else if (key == 0 && last_mod_key != 0) {
             // mod key press
             put_key(&hid2ps2[0xE0+i], KEY_RELEASE);
+            _debug(&hid2ps2[0xE0+i], KEY_RELEASE);
         }
     }
     mod_last = mod_key;
@@ -31,10 +33,12 @@ void parser_hid(const uint8_t* in) {
         if (normal_key[i] != 0 && last_key[i] == 0) {
             // key press
             put_key(&hid2ps2[normal_key[i]], KEY_PRESS);
+            _debug(&hid2ps2[normal_key[i]], KEY_PRESS);
         }
         else if (normal_key[i] == 0 && last_key[i] != 0) {
             // key release
             put_key(&hid2ps2[last_key[i]], KEY_RELEASE);
+            _debug(&hid2ps2[last_key[i]], KEY_RELEASE);
         }
     }
     // all done update last_key

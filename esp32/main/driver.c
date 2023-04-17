@@ -5,31 +5,18 @@
 
 //since for the device side we are going to be in charge of the clock,
 //the two defines below are how long each _phase_ of the clock cycle is
-#define M_CLKFULL 40UL
+#define CLKFULL 40
 // we make changes in the middle of a phase, this how long from the
 // start of phase to the when we drive the data line
-#define M_CLKHALF 20UL
-
+#define CLKHALF 20
 // Delay between bytes
 // I've found i need at least 400us to get this working at all,
 // but even more is needed for reliability, so i've put 1000us
-#define M_BYTEWAIT 1000UL
-
-// Timeout if computer not sending for 30ms
-#define M_TIMEOUT 30UL
-
-#define CLKFULL 40
-#define CLKHALF 20
 #define BYTEWAIT 1000
+// Timeout if computer not sending for 30ms
 #define TIMEOUT 30
 
-// const TickType_t CLKFULL = pdMS_TO_TICKS( M_CLKFULL );
-// const TickType_t CLKHALF = pdMS_TO_TICKS( M_CLKHALF );
-// const TickType_t BYTEWAIT = pdMS_TO_TICKS( M_BYTEWAIT );
-// const TickType_t TIMEOUT = pdMS_TO_TICKS( M_TIMEOUT );
 
-/*#define gohi(pin) gpio_set_level(pin, 1)*/
-/*#define golo(pin) gpio_set_level(pin, 0)*/
 #define delayMicroseconds(time) usleep(time)
 #define digitalRead(pin) gpio_get_level(pin)
 #define LOW 0
@@ -111,17 +98,25 @@ int8_t ps2_write(uint8_t data) {
     return 0;
 }
 
-static keyEvent last_key;
+static uint8_t typing_status = 0;  // 当前机打状态 0=无键按下 1=键按下等待机打超时 2=机打
+static keyEvent last_key;  // 
+static keyEvent last_press_key;   // 用来实现机打功能, 
 void sim_key(keyEvent* key) {
     last_key = *key;
     if (key->ps2_keytype == PS2_KEY_TYPE_NORMAL) {
         if (key->status) {
             // key_press
             ps2_write(key->ps2_keycode);
+            last_press_key = *key;
+            typing_status = 1;
         }
         else {
             ps2_write(0xF0);
             ps2_write(key->ps2_keycode);
+            if (key->ps2_keycode == last_press_key.ps2_keycode && key->ps2_keytype == last_press_key.ps2_keytype) {
+                last_press_key.ps2_keycode = 0;
+                typing_status = 0;
+            }
         }
     }
     else {
@@ -129,11 +124,17 @@ void sim_key(keyEvent* key) {
             // key_press
             ps2_write(0xE0);
             ps2_write(key->ps2_keycode);
+            last_press_key = *key;
+            typing_status = 1;
         }
         else {
             ps2_write(0xE0);
             ps2_write(0xF0);
             ps2_write(key->ps2_keycode);
+            if (key->ps2_keycode == last_press_key.ps2_keycode && key->ps2_keytype == last_press_key.ps2_keytype) {
+                last_press_key.ps2_keycode = 0;
+                typing_status = 0;
+            }
         }
     }
 }
@@ -272,47 +273,51 @@ static void ps2_ack(){
 static uint8_t ps2_keyboard_reply(uint8_t cmd) {
     uint8_t val=0;
     switch (cmd) {
-    case 0xFF: //reset
-        ps2_ack();
-        //the while loop lets us wait for the host to be ready
-        while(ps2_write(0xAA)!=0);
-        break;
-    case 0xFE: //resend
-        sim_key(&last_key);
-        break;
-    case 0xF6: //set defaults
-        //enter stream mode
-        ps2_ack();
-        break;
-    case 0xF5: //disable data reporting
-        //FM
-        ps2_ack();
-        break;
-    case 0xF4: //enable data reporting
-        //FM
-        ps2_ack();
-        break;
-    case 0xF3: //set typematic rate
-        ps2_ack();
-        if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
-        break;
-    case 0xF2: //get device id
-        ps2_ack();
-        ps2_write(0xAB);
-        ps2_write(0x83);
-        break;
-    case 0xF0: //set scan code set
-        ps2_ack();
-        if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
-        break;
-    case 0xEE: //echo
-        //ps2_ack();
-        ps2_write(0xEE);
-        break;
-    case 0xED: //set/reset LEDs
-        ps2_ack();
-        if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
-        break;
+        case 0x00:
+            break;
+        case 0xFF: //reset
+            ps2_ack();
+            //the while loop lets us wait for the host to be ready
+            while(ps2_write(0xAA)!=0);
+            break;
+        case 0xFE: //resend
+            sim_key(&last_key);
+            break;
+        case 0xF6: //set defaults
+            //enter stream mode
+            ps2_ack();
+            break;
+        case 0xF5: //disable data reporting
+            //FM
+            ps2_ack();
+            break;
+        case 0xF4: //enable data reporting
+            //FM
+            ps2_ack();
+            break;
+        case 0xF3: //set typematic rate
+            ps2_ack();
+            if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
+            break;
+        case 0xF2: //get device id
+            ps2_ack();
+            ps2_write(0xAB);
+            ps2_write(0x83);
+            break;
+        case 0xF0: //set scan code set
+            ps2_ack();
+            if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
+            break;
+        case 0xEE: //echo
+            //ps2_ack();
+            ps2_write(0xEE);
+            break;
+        case 0xED: //set/reset LEDs
+            ps2_ack();
+            if(!ps2_read(&val)) ps2_ack(); //do nothing with the rate
+            break;
+        default:
+            ps2_ack();
     }
 #ifdef _PS2DBG
     if (cmd != 0) {
@@ -323,10 +328,40 @@ static uint8_t ps2_keyboard_reply(uint8_t cmd) {
 }
 
 void is_idle() {
+    static TickType_t last_time = 0;
+    static uint8_t typing_mode_change_cnt = 0;  // 机打超时计数
     uint8_t c;
     if (ps2_available()) {
         ps2_read(&c);
         ps2_keyboard_reply(c);
+    }
+    TickType_t current_time = xTaskGetTickCount();
+    if (current_time - last_time > TypingTimeout) {
+        /*ESP_LOGI("typing", "timeout");*/
+        last_time = current_time;
+        if (typing_status==1) {
+            typing_mode_change_cnt ++;
+            if (typing_mode_change_cnt == 4) {
+                typing_status = 2;
+                typing_mode_change_cnt = 0;
+            }
+        }
+        else if (typing_status == 2) {
+            // 模拟机打
+            if (last_press_key.ps2_keytype == PS2_KEY_TYPE_NORMAL) {
+                // key_press
+                ps2_write(last_press_key.ps2_keycode);
+            }
+            else {
+                // key_press
+                ps2_write(0xE0);
+                ps2_write(last_press_key.ps2_keycode);
+            }
+            ESP_LOGI("typing", "typing %x", last_press_key.ps2_keycode);
+        }
+        else {
+            typing_mode_change_cnt = 0;
+        }
     }
 }
 

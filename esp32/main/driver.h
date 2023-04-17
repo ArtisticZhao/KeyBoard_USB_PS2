@@ -25,6 +25,8 @@ void init_keyboard();
 
 void sim_key(keyEvent* key);
 
+// 定义机打时延 目前一秒五个
+#define TypingTimeout  20
 void is_idle();   // auto handle return
 
 #endif

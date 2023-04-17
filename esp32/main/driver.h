@@ -5,7 +5,7 @@
 #include "fifo.h"
 
 
-#define _PS2DBG
+//#define _PS2DBG
 
 #define PS2_CLK 19
 #define PS2_DATA 18

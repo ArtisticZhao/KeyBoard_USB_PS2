@@ -24,6 +24,6 @@ void init_table();
 void parser_hid(const uint8_t* in);
 
 // 打印按键值和状态
-#define __DEBUG
+//#define __DEBUG
 void _debug(Ps2Key* key, uint8_t mode);
 #endif

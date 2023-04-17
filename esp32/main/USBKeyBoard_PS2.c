@@ -116,7 +116,7 @@ static void ps2_event_task(void *pvParameters) {
     QueueHandle_t fifo = (QueueHandle_t) pvParameters;
     keyEvent key_event;
     for (;;) {
-        if (xQueueReceive(fifo, &key_event, 10) != pdPASS) {
+        if (xQueueReceive(fifo, &key_event, 0) != pdPASS) {
             // no data
             is_idle();
         }

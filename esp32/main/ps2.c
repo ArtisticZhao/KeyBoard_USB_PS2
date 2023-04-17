@@ -3,8 +3,18 @@
 #include "esp_log.h"
 
 #include "fifo.h"
-
+#include "uart_process.h"
 static Ps2Key hid2ps2[0xE8];  // 定义hid编码到ps2编码的查找表
+                              //
+
+bool is_key_in_list(uint8_t key, const uint8_t* key_list) {
+    for (size_t i=0; i<6; i++) {
+        if (key_list[i] == key) {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 void parser_hid(const uint8_t* in) {
@@ -29,13 +39,15 @@ void parser_hid(const uint8_t* in) {
     mod_last = mod_key;
     // ------ 处理正常按键
     const uint8_t* normal_key = in+3;
+    /*ESP_LOGI("uart", "norm=%s", print_bytes((const char*)normal_key, 6));*/
+    /*ESP_LOGI("uart", "last=%s", print_bytes((const char*)last_key, 6));*/
     for (uint8_t i = 0; i < 6; i++) {
-        if (normal_key[i] != 0 && last_key[i] == 0) {
+        if (normal_key[i] != 0 && !is_key_in_list(normal_key[i], last_key)) {
             // key press
             put_key(&hid2ps2[normal_key[i]], KEY_PRESS);
             _debug(&hid2ps2[normal_key[i]], KEY_PRESS);
         }
-        else if (normal_key[i] == 0 && last_key[i] != 0) {
+        else if (!is_key_in_list(last_key[i], normal_key) && last_key[i] != 0) {
             // key release
             put_key(&hid2ps2[last_key[i]], KEY_RELEASE);
             _debug(&hid2ps2[last_key[i]], KEY_RELEASE);

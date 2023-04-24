@@ -22,6 +22,8 @@
 #define LOW 0
 #define HIGH 1
 
+portMUX_TYPE myMutex = portMUX_INITIALIZER_UNLOCKED;
+
 static void gohi(uint32_t pin) {
     gpio_set_direction(pin, GPIO_MODE_INPUT);
     gpio_pullup_en(pin);
@@ -47,6 +49,7 @@ int8_t ps2_write(uint8_t data) {
         return -2;
     }
 
+    taskENTER_CRITICAL(&myMutex); //进入临界区
     golo(_ps2data);
     delayMicroseconds(CLKHALF);
     // device sends on falling clock
@@ -92,6 +95,8 @@ int8_t ps2_write(uint8_t data) {
     delayMicroseconds(CLKFULL);
     gohi(_ps2clk);
     delayMicroseconds(CLKHALF);
+    taskEXIT_CRITICAL(&myMutex);
+
 
     delayMicroseconds(BYTEWAIT);
 
@@ -107,8 +112,10 @@ void sim_key(keyEvent* key) {
         if (key->status) {
             // key_press
             ps2_write(key->ps2_keycode);
-            last_press_key = *key;
-            typing_status = 1;
+            if (key->ps2_keycode != 0x14 && key->ps2_keycode != 0x12 && key->ps2_keycode != 0x11 && key->ps2_keycode != 0x59 ) {  // skip mod key: Lctr Lshift Lalt Rshift
+                last_press_key = *key;
+                typing_status = 1;
+            }
         }
         else {
             ps2_write(0xF0);
@@ -124,8 +131,10 @@ void sim_key(keyEvent* key) {
             // key_press
             ps2_write(0xE0);
             ps2_write(key->ps2_keycode);
-            last_press_key = *key;
-            typing_status = 1;
+            if (key->ps2_keycode != 0x1F && key->ps2_keycode != 0x14 && key->ps2_keycode != 0x11 && key->ps2_keycode != 0x27 ) {  // skip mod key: LGui RCtrl RAlt RGui
+                last_press_key = *key;
+                typing_status = 1;
+            }
         }
         else {
             ps2_write(0xE0);
@@ -157,6 +166,7 @@ uint8_t ps2_read(uint8_t* value){
         }
     }
 
+    taskENTER_CRITICAL(&myMutex); //进入临界区
     delayMicroseconds(CLKHALF);
     golo(_ps2clk);
     delayMicroseconds(CLKFULL);
@@ -205,6 +215,7 @@ uint8_t ps2_read(uint8_t* value){
     gohi(_ps2clk);
     delayMicroseconds(CLKHALF);
     gohi(_ps2data);
+    taskEXIT_CRITICAL(&myMutex);
 
 
     *value = data & 0x00FF;
@@ -357,7 +368,7 @@ void is_idle() {
                 ps2_write(0xE0);
                 ps2_write(last_press_key.ps2_keycode);
             }
-            ESP_LOGI("typing", "typing %x", last_press_key.ps2_keycode);
+            /*ESP_LOGI("typing", "typing %x", last_press_key.ps2_keycode);*/
         }
         else {
             typing_mode_change_cnt = 0;

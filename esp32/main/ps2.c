@@ -184,7 +184,7 @@ void init_table() {
     set_ps2key(0xE2, 0x11, PS2_KEY_TYPE_NORMAL, "LAlt");
     set_ps2key(0xE3, 0x1F, PS2_KEY_TYPE_E0, "LGUI");
     set_ps2key(0xE4, 0x14, PS2_KEY_TYPE_E0, "RCtrl");
-    set_ps2key(0xE5, 0x59, PS2_KEY_TYPE_E0, "RShift");
+    set_ps2key(0xE5, 0x59, PS2_KEY_TYPE_NORMAL, "RShift");
     set_ps2key(0xE6, 0x11, PS2_KEY_TYPE_E0, "RAlt");
     set_ps2key(0xE7, 0x27, PS2_KEY_TYPE_E0, "RGUI");
 

@@ -162,5 +162,5 @@ void app_main(void)
     init_keyboard();
     //Create a task to handler UART event from ISR
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
-    xTaskCreate(ps2_event_task, "ps2_event_task", 2048, key_event_fifo, 12, NULL);
+    xTaskCreate(ps2_event_task, "ps2_event_task", 2048, key_event_fifo, 2, NULL);
 }

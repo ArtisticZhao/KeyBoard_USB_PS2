@@ -146,6 +146,7 @@ void sim_key(keyEvent* key) {
             }
         }
     }
+    vTaskDelay(10 / portTICK_PERIOD_MS);  // 10ms between keys
 }
 
 uint8_t ps2_available() {

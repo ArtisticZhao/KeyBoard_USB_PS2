@@ -28,10 +28,14 @@ void parser_hid(const uint8_t* in) {
         if (key != 0 && last_mod_key == 0) {
             // mod key press
             put_key(&hid2ps2[0xE0+i], KEY_PRESS);
+            put_key(&hid2ps2[0xE0+i], KEY_PRESS);
+            put_key(&hid2ps2[0xE0+i], KEY_PRESS);
             _debug(&hid2ps2[0xE0+i], KEY_PRESS);
         }
         else if (key == 0 && last_mod_key != 0) {
             // mod key press
+            put_key(&hid2ps2[0xE0+i], KEY_RELEASE);
+            put_key(&hid2ps2[0xE0+i], KEY_RELEASE);
             put_key(&hid2ps2[0xE0+i], KEY_RELEASE);
             _debug(&hid2ps2[0xE0+i], KEY_RELEASE);
         }

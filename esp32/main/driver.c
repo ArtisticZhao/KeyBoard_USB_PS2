@@ -103,6 +103,10 @@ int8_t ps2_write(uint8_t data) {
     return 0;
 }
 
+
+void wait_idle();
+
+
 static uint8_t typing_status = 0;  // 当前机打状态 0=无键按下 1=键按下等待机打超时 2=机打
 static keyEvent last_key;  // 
 static keyEvent last_press_key;   // 用来实现机打功能, 
@@ -111,6 +115,7 @@ void sim_key(keyEvent* key) {
     if (key->ps2_keytype == PS2_KEY_TYPE_NORMAL) {
         if (key->status) {
             // key_press
+            wait_idle();
             ps2_write(key->ps2_keycode);
             if (key->ps2_keycode != 0x14 && key->ps2_keycode != 0x12 && key->ps2_keycode != 0x11 && key->ps2_keycode != 0x59 ) {  // skip mod key: Lctr Lshift Lalt Rshift
                 last_press_key = *key;
@@ -118,6 +123,7 @@ void sim_key(keyEvent* key) {
             }
         }
         else {
+            wait_idle();
             ps2_write(0xF0);
             ps2_write(key->ps2_keycode);
             if (key->ps2_keycode == last_press_key.ps2_keycode && key->ps2_keytype == last_press_key.ps2_keytype) {
@@ -129,6 +135,7 @@ void sim_key(keyEvent* key) {
     else {
         if (key->status) {
             // key_press
+            wait_idle();
             ps2_write(0xE0);
             ps2_write(key->ps2_keycode);
             if (key->ps2_keycode != 0x1F && key->ps2_keycode != 0x14 && key->ps2_keycode != 0x11 && key->ps2_keycode != 0x27 ) {  // skip mod key: LGui RCtrl RAlt RGui
@@ -137,6 +144,7 @@ void sim_key(keyEvent* key) {
             }
         }
         else {
+            wait_idle();
             ps2_write(0xE0);
             ps2_write(0xF0);
             ps2_write(key->ps2_keycode);
@@ -146,11 +154,16 @@ void sim_key(keyEvent* key) {
             }
         }
     }
-    vTaskDelay(50 / portTICK_PERIOD_MS);  // 50ms between keys
+    vTaskDelay(20 / portTICK_PERIOD_MS);  // 50ms between keys
 }
 
 uint8_t ps2_available() {
     return ( (gpio_get_level(_ps2data) == 0) || (gpio_get_level(_ps2clk) == 0) );
+}
+
+
+void wait_idle() {
+    while(ps2_available());
 }
 
 uint8_t ps2_read(uint8_t* value){
